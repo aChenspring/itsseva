@@ -1,0 +1,83 @@
+package com.itsseva.es.viewmodel.tag;
+
+import com.itsseva.es.viewmodel.menu.MenuItem;
+
+import javax.servlet.jsp.tagext.TagSupport;
+import java.util.List;
+import java.util.Map;
+
+public class LeftMenuTag extends TagSupport {
+    private List<MenuItem> menus;
+
+    @Override
+    public int doStartTag() {
+        try {
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append("<ul id='mclnav'>");
+            int level = 0;
+            buildMenus(stringBuilder, menus, level);
+            stringBuilder.append("</ul>");
+
+            this.pageContext.getOut().println(stringBuilder.toString());
+            return super.doEndTag();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    private void buildMenus(StringBuilder stringBuilder, List<MenuItem> menus, int level) {
+        if (menus == null || menus.size() == 0) return;
+
+        for (MenuItem menuItem : menus) {
+            stringBuilder.append("<li>");
+
+            if (menuItem.getChildren().size() == 0) {
+                stringBuilder.append("<a href='");
+                if (menuItem.getDisable()) {
+                    stringBuilder.append("javascript:;");
+                } else {
+                    stringBuilder.append(menuItem.getUrl());
+                }
+                stringBuilder.append("'");
+                if (menuItem.getSelected()) {
+                    stringBuilder.append(" class='action1'");
+                }
+                if (level > 0) {
+                    stringBuilder.append(" style='text-indent:").append(36 * level).append("px'");
+                }
+                for (Map.Entry<String, String> entry : menuItem.getAttributes().entrySet()) {
+                    stringBuilder.append(entry.getKey()).append("='").append(entry.getValue()).append("'");
+                }
+                stringBuilder.append(">").append(menuItem.getText()).append("</a>");
+            } else {
+                stringBuilder.append("<h3 ");
+                if (menuItem.getExpanded()) {
+                    stringBuilder.append("class='jian'");
+                } else {
+                    stringBuilder.append("class='jia'");
+                }
+                if (level > 0) {
+                    stringBuilder.append(" style='text-indent:").append(36 * level).append("px'");
+                }
+                stringBuilder.append(">").append(menuItem.getText()).append("</h3>");
+
+                stringBuilder.append("<ul ");
+                if (menuItem.getExpanded()) {
+                    stringBuilder.append("style='display: block;'");
+                }
+                stringBuilder.append(">");
+
+                buildMenus(stringBuilder, menuItem.getChildren(), level + 1);
+
+                stringBuilder.append("</ul>");
+            }
+
+            stringBuilder.append("</li>");
+        }
+    }
+
+    public void setMenus(List<MenuItem> menus) {
+        this.menus = menus;
+    }
+}
